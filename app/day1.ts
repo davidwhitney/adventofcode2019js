@@ -1,21 +1,13 @@
 export class Day1 {
     public calculate(...masses: number[]): number {
-        let total = 0;
-        for(const mass of masses){
-            const step1 = mass / 3;
-            const step2 = Math.floor(step1);
-            total += step2 - 2;
-        }
-        return total;
+        return masses.map(mass => this.costOf(mass)).reduce((n1: number, n2: number) => n1 + n2);
     }
 
     
     public calculateWithFuel(...masses: number[]): number {
         let total = 0;
-        for(const mass of masses){
-            const step1 = mass / 3;
-            const step2 = Math.floor(step1);
-            const cost = step2 - 2;
+        for(const mass of masses) {
+            const cost = this.costOf(mass);
 
             if (cost <= 0) {
                 return total;
@@ -25,4 +17,6 @@ export class Day1 {
         }
         return total;
     }
+
+    private costOf = (mass: number) => Math.floor(mass / 3) - 2;
 }
