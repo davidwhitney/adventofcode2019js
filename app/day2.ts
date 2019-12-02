@@ -19,11 +19,11 @@ export class Day2 {
 
     public execute(): void {
         while (this._validOpcodes.indexOf(this.currentOpcode) != -1) {
-            this.stepOnce(this.currentOpcode);
+            this.processInstruction(this.currentOpcode);
         }
     }
 
-    private stepOnce(opcode: number): void {
+    private processInstruction(opcode: number): void {
         const loc1 = this._state[this._instructionPointer + 1];
         const loc2 = this._state[this._instructionPointer + 2];
         const target = this._state[this._instructionPointer + 3];
