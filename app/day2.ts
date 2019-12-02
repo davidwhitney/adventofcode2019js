@@ -11,9 +11,9 @@ export class Day2 {
         this._state = [ ...values ];
     }
 
-    public resetTo1202alarmState(): Day2 {        
-        this._state[1] = 12;
-        this._state[2] = 2;
+    public resetStateUsing(noun: number, verb: number): Day2 {        
+        this._state[1] = noun;
+        this._state[2] = verb;
         return this;
     }
 
@@ -30,14 +30,12 @@ export class Day2 {
 
         if (opcode == 1) {
             this._state[target] = this._state[loc1] + this._state[loc2];
-            this._instructionPointer += 4;
-            return;
         }
 
         if (opcode == 2) {
             this._state[target] = this._state[loc1] * this._state[loc2];
-            this._instructionPointer += 4;
-            return;
         }
+        
+        this._instructionPointer += 4;
     }  
 }

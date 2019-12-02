@@ -46,11 +46,27 @@ describe("Day 2", () => {
 
     it("Part 1", () => {        
         const testData: String = fs.readFileSync("./app/day2-input1.txt", "utf8");
-        const dataItems = testData.split(',').map(asString => parseInt(asString));
-        const sut = new Day2(...dataItems).resetTo1202alarmState();
+        const dataItems = testData.split(',').map(asString => parseInt(asString));        
+        const sut = new Day2(...dataItems).resetStateUsing(12, 2);
         
         sut.execute();
 
         expect(sut.output).toEqual(3706713);
+    });
+
+    it("Part 2", () => {        
+        const testData: String = fs.readFileSync("./app/day2-input1.txt", "utf8");
+        const dataItems = testData.split(',').map(asString => parseInt(asString));        
+        
+        for(let noun = 0; noun <= 99; noun++) {
+            for(let verb = 0; verb <= 99; verb++) {
+                const sut = new Day2(...dataItems).resetStateUsing(noun, verb);        
+                sut.execute();
+
+                if (sut.output === 19690720) {
+                    console.log(100 * noun + verb);
+                }
+            }
+        }
     });
 });
