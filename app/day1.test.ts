@@ -20,7 +20,7 @@ describe("Day 1", () => {
 
     it("Can solve puzzle 1", async () => {
         const testData: String = fs.readFileSync("./app/day1-input1.txt", "utf8");
-        const dataItems = testData.split(require('os').EOL).map(asString => parseInt(asString));
+        const dataItems = testData.split('\n').map(asString => parseInt(asString));
 
         const sut = new Day1();
         const result = sut.calculate(...dataItems);
@@ -30,7 +30,7 @@ describe("Day 1", () => {
     
     it("Can solve puzzle 2", async () => {
         const testData: String = fs.readFileSync("./app/day1-input1.txt", "utf8");
-        const dataItems = testData.split(require('os').EOL).map(asString => parseInt(asString));
+        const dataItems = testData.split('\n').map(asString => parseInt(asString));
 
         const sut = new Day1();
         const result = sut.calculateWithFuel(...dataItems);
