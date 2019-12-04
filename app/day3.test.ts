@@ -1,4 +1,5 @@
 import { Day3, Wire, WirePart } from './day3';
+import * as fs from 'fs';
 
 describe("Day 3", () => {
     
@@ -38,9 +39,43 @@ describe("Day 3", () => {
         sut.plot("U7", "R6", "D4", "L4");
 
         const result = sut.intersections();
-        console.log(result);
+        const manhattenDistance = sut.closestIntersection();
+        
         expect(result.length).toBe(2);
-    }
+        expect(manhattenDistance).toBe(6);
+    })
+
+    it("Examples", () => {
+        let sut = new Day3();
+        sut.plot("R75","D30","R83","U83","L12","D49","R71","U7","L72");
+        sut.plot("U62","R66","U55","R34","D71","R55","D58","R83");
+        let manhattenDistance1 = sut.closestIntersection();        
+
+        sut = new Day3();
+        sut.plot("R98","U47","R26","D63","R33","U87","L62","D20","R33","U53","R51");
+        sut.plot("U98","R91","D20","R16","D67","R40","U7","R15","U6","R7");
+        let manhattenDistance2 = sut.closestIntersection();        
+        
+        expect(manhattenDistance1).toBe(159);
+        expect(manhattenDistance2).toBe(135);
+    })
+
+    // Slow
+    /*
+    it("Quiz 1", () => {        
+        const testData: String = fs.readFileSync("./app/day3-input1.txt", "utf8");
+        const lines: string[] = testData.split('\r\n');
+        
+        let sut = new Day3();
+
+        for(const l of lines) {            
+            const commands: string[] = l.split(',');            
+            sut.plot(...commands);
+        }
+
+        let manhattenDistance = sut.closestIntersection();   
+        expect(manhattenDistance).toBe(209);   
+    }, 100 * 1000);*/
 });
 
 

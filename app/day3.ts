@@ -1,5 +1,3 @@
-import { basename } from "path";
-
 type Direction = "U" | "D" | "L" | "R";
 
 class Coord  {  
@@ -57,9 +55,8 @@ export class Day3 {
         
         for(const wire of this._wires) {
             const otherWires = this._wires.slice().filter(w => w != wire);
-            console.log(otherWires.length);
 
-            for(let otherWire of otherWires) {
+            for(const otherWire of otherWires) {
                 const pointsThatIntersect = otherWire.intersections(wire);
                 intersections.push(...pointsThatIntersect);
             }
@@ -68,13 +65,20 @@ export class Day3 {
         let result = intersections.filter(location => !Coord.isStartPosition(location));
         const distinct: Coord[] = [];
 
-        for(let item of result) {
+        for(const item of result) {
             if(!distinct.some(other => Coord.equals(item, other))) {
                 distinct.push(item);
             }
         }
 
         return distinct;
+    }
+
+    public closestIntersection(): number {
+        const allIntersections = this.intersections();
+        let distances = allIntersections.map(thisOne => Math.abs(0-thisOne.x) + Math.abs(0-thisOne.y));
+        distances = distances.sort((n1,n2) => n1 - n2);
+        return distances[0];
     }
 }
 
