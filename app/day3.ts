@@ -80,6 +80,50 @@ export class Day3 {
         distances = distances.sort((n1,n2) => n1 - n2);
         return distances[0];
     }
+
+    public distanceToClosestIntersection(): number {        
+        const allIntersections = this.intersections();
+        let distances = allIntersections.map(thisOne =>{ 
+            const dist = Math.abs(0-thisOne.x) + Math.abs(0-thisOne.y)
+            return { loc: thisOne, dist: dist };
+        });
+
+        distances = distances.sort((n1,n2) => n1.dist - n2.dist);
+        
+
+        const intersectionByDistance = [];
+        const intersection = distances[0].loc;
+        //for(const intersection of allIntersections) {
+            const distanceTo = this.distanceTo(intersection);
+            console.log(intersection);
+            console.log(distanceTo);
+
+        //}
+
+        return 0;
+    }
+
+    private distanceTo(coord: Coord): number {
+        let distance = this._wires.length;
+        
+        for(const wire of this._wires) {
+            for(const part of wire) {
+                for(const node of part.nodes().slice(1)) {
+                    console.log(node);
+
+                    distance++;
+                    
+                    if(Coord.equals(coord, node)) {
+                        console.log("We got to the intersection!");
+                        break;
+                    }
+                }
+            }
+        }
+
+        console.log(distance);
+        return distance;
+    }
 }
 
 export interface IWirePart {
@@ -134,11 +178,15 @@ export class WirePart implements IWirePart {
         return intersections;
     }
 
+    public nodes(): Coord[] {
+        return this.allPositionsBetween(this.from, this.to);
+    }
+
     private allPositionsBetween(first: Coord, second: Coord): Coord[] {
-        const lowX = [ first.x, second.x ].sort()[0];
-        const highX = [ first.x, second.x ].sort()[1];
-        const lowY = [ first.y, second.y ].sort()[0];
-        const highY = [ first.y, second.y ].sort()[1];
+        const lowX = [ first.x, second.x ].sort((n1,n2) => n1 - n2)[0];
+        const highX = [ first.x, second.x ].sort((n1,n2) => n1 - n2)[1];
+        const lowY = [ first.y, second.y ].sort((n1,n2) => n1 - n2)[0];
+        const highY = [ first.y, second.y ].sort((n1,n2) => n1 - n2)[1];
 
         const positions: Coord[] = [];
 

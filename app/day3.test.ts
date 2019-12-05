@@ -2,7 +2,7 @@ import { Day3, Wire, WirePart } from './day3';
 import * as fs from 'fs';
 
 describe("Day 3", () => {
-    
+    /*
     it("Plot plots correct number of lines", () => {
         const sut = new Day3();
         sut.plot("R8", "U5", "L5", "D3");
@@ -32,7 +32,7 @@ describe("Day 3", () => {
         sut.plot("D8");
         expect(sut.lines[0][0].to.y).toBe(-8);
     });
-
+*/
     it("Can calculate intersections accurately", () => {
         const sut = new Day3();
         sut.plot("R8", "U5", "L5", "D3");
@@ -40,11 +40,13 @@ describe("Day 3", () => {
 
         const result = sut.intersections();
         const manhattenDistance = sut.closestIntersection();
+        const distanceToIntersection = sut.distanceToClosestIntersection();
         
         expect(result.length).toBe(2);
         expect(manhattenDistance).toBe(6);
+        expect(distanceToIntersection).toBe(30);
     })
-
+/*
     it("Examples", () => {
         let sut = new Day3();
         sut.plot("R75","D30","R83","U83","L12","D49","R71","U7","L72");
@@ -58,7 +60,7 @@ describe("Day 3", () => {
         
         expect(manhattenDistance1).toBe(159);
         expect(manhattenDistance2).toBe(135);
-    })
+    })*/
 
     // Slow
     /*
