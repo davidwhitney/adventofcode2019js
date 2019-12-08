@@ -1,28 +1,17 @@
-import { Day2 } from "./day2";
+import { IntcodeVm as Day2 } from "./IntCodeVm";
 import * as fs from 'fs';
 
 describe("Day 2", () => {
-    it("Can support add opcodes", () => {
-        const sut = new Day2(1, 1, 2, 4);        
+  
+    it("Can do simple add", () => {
+        const sut = new Day2(1, 9, 10, 3, 2,3,11,0, 99, 30,40,50);
         sut.execute();        
-        expect(sut.state[4]).toBe(3);
-    });
-
-    it("Can support multiply opcodes", () => {
-        const sut = new Day2(2, 0, 0, 4);        
-        sut.execute();        
-        expect(sut.state[4]).toBe(4);
-    });
-
-    it("Can support halting opcodes", () => {
-        const sut = new Day2(99, 3, 3, 4);        
-        sut.execute();        
-        expect(sut.state[4]).toBeUndefined();
+        expect(sut.state).toEqual([3500, 9, 10, 70, 2,3,11,0,99, 30,40,50 ]);
     });
 
     it("Can run the example 1", () => {
-        const sut = new Day2(1, 0, 0, 0, 99);    
-        sut.execute();        
+        const sut = new Day2(1, 0, 0, 0, 99);
+        sut.execute();
         expect(sut.state).toEqual([2, 0, 0, 0, 99]);
     });
 
@@ -44,18 +33,16 @@ describe("Day 2", () => {
         expect(sut.state).toEqual([30, 1, 1, 4, 2, 5, 6, 0, 99]);
     });
 
-    it("Part 1", () => {        
-        const testData: String = fs.readFileSync("./app/day2-input1.txt", "utf8");
-        const dataItems = testData.split(',').map(asString => parseInt(asString));        
-        const sut = new Day2(...dataItems).resetStateUsing(12, 2);
+    it("Part 1", () => {      
+        const sut = Day2.withInput("./app/day2-input1.txt").resetStateUsing(12, 2);
         
         sut.execute();
 
         expect(sut.output).toEqual(3706713);
     });
 
-    it("Part 2", () => {        
-        const testData: String = fs.readFileSync("./app/day2-input1.txt", "utf8");
+    it("Part 2", () => {
+        const testData: string = fs.readFileSync("./app/day2-input1.txt", "utf8");
         const dataItems = testData.split(',').map(asString => parseInt(asString));        
         
         for(let noun = 0; noun <= 99; noun++) {
