@@ -83,45 +83,45 @@ export class Day3 {
 
     public distanceToClosestIntersection(): number {        
         const allIntersections = this.intersections();
-        let distances = allIntersections.map(thisOne =>{ 
-            const dist = Math.abs(0-thisOne.x) + Math.abs(0-thisOne.y)
-            return { loc: thisOne, dist: dist };
-        });
 
-        distances = distances.sort((n1,n2) => n1.dist - n2.dist);
-        
-
-        const intersectionByDistance = [];
-        const intersection = distances[0].loc;
-        //for(const intersection of allIntersections) {
+        let intersectionByDistance: any[] = [];
+        console.log(allIntersections);
+        for(const intersection of allIntersections) {
             const distanceTo = this.distanceTo(intersection);
-            console.log(intersection);
-            console.log(distanceTo);
+            intersectionByDistance.push({
+                target: intersection,
+                totalDistance: distanceTo
+            });
+        }
 
-        //}
 
-        return 0;
+        intersectionByDistance = intersectionByDistance.sort((n1,n2) => n1.totalDistance - n2.totalDistance); 
+        return intersectionByDistance[0].totalDistance;
     }
 
     private distanceTo(coord: Coord): number {
-        let distance = this._wires.length;
+        let distance = 0;
         
         for(const wire of this._wires) {
-            for(const part of wire) {
-                for(const node of part.nodes().slice(1)) {
-                    console.log(node);
+            distance += this.distanceToLocationInWire(wire, coord);
+        }
 
-                    distance++;
-                    
-                    if(Coord.equals(coord, node)) {
-                        console.log("We got to the intersection!");
-                        break;
-                    }
+        return distance;
+    }
+
+    private distanceToLocationInWire(wire: Wire, coord: Coord) {
+        let distance = 0;
+        for (const part of wire) {
+            const steps = part.nodes().slice(1);
+
+            for (const node of steps) {
+                distance++;
+                if (Coord.equals(coord, node)) {
+                    return distance;
                 }
             }
         }
 
-        console.log(distance);
         return distance;
     }
 }
@@ -183,23 +183,31 @@ export class WirePart implements IWirePart {
     }
 
     private allPositionsBetween(first: Coord, second: Coord): Coord[] {
-        const lowX = [ first.x, second.x ].sort((n1,n2) => n1 - n2)[0];
-        const highX = [ first.x, second.x ].sort((n1,n2) => n1 - n2)[1];
-        const lowY = [ first.y, second.y ].sort((n1,n2) => n1 - n2)[0];
-        const highY = [ first.y, second.y ].sort((n1,n2) => n1 - n2)[1];
-
+        // This is so nasty, I'm sorry.
         const positions: Coord[] = [];
 
-        if(lowX == highX) {    
-            for(let y = lowY; y <= highY; y++) {
-                positions.push({x: lowX, y});
-            }             
+        if(first.x == second.x) { 
+            if(first.y < second.y) {
+                for(let y = first.y; y <= second.y; y++) {
+                    positions.push({x: first.x, y});
+                }
+            } else {
+                for(let y = first.y; y >= second.y; y--) {
+                    positions.push({x: first.x, y});
+                }
+            }            
         }
 
-        if(lowY == highY) { 
-            for(let x = lowX; x <= highX; x++) {
-                positions.push({x, y: lowY});
-            }             
+        if(first.y == second.y) { 
+            if(first.x < second.x) {
+                for(let x = first.x; x <= second.x; x++) {
+                    positions.push({x, y: first.y});
+                }
+            } else {
+                for(let x = first.x; x >= second.x; x--) {
+                    positions.push({x, y: first.y});
+                }
+            }                        
         }
 
         return positions;
