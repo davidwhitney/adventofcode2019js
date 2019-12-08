@@ -69,7 +69,7 @@ describe("Day 3", () => {
 
     // Slow
     
-    it("Quiz 1", () => {        
+    /*it("Quiz 1", () => {
         const testData: String = fs.readFileSync("./app/day3-input1.txt", "utf8");
         const lines: string[] = testData.split('\r\n');
         
@@ -85,7 +85,7 @@ describe("Day 3", () => {
 
         expect(manhattenDistance).toBe(209);   
         expect(distanceToIntersection1).toBe(43258);
-    }, 100 * 1000);
+    }, 100 * 1000);*/
 });
 
 
