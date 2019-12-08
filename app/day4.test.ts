@@ -40,21 +40,42 @@ describe("Day 4", () => {
         expect(sut.validPassword("223450")).toBe(false);
     });
 
+    it("two adjacent matching digits are not part of a larger group of matching digits", () => {
+        const sut = new Day4();
+
+        expect(sut.mustContainAtLeastOneDoubleMatchingDigit("112233")).toBe(true);
+        expect(sut.mustContainAtLeastOneDoubleMatchingDigit("111122")).toBe(true);
+        expect(sut.mustContainAtLeastOneDoubleMatchingDigit("123444")).toBe(false);
+    });
+
     it("Can count valid passwords in range", () => {
         const sut = new Day4();
         
         let valid = 0;
 
-        for(let i = 171309; i <= 643603; i++) {
-            const asStr = i.toString();
-            
-            const result = sut.validPassword(asStr);
+        for(let i = 171309; i <= 643603; i++) {            
+            const result = sut.validPassword(i.toString());
             if(result) {
                 valid++;
             }
         }
 
         expect(valid).toBe(1625);
+    });
+
+    it("Can count valid passwords in range part 2", () => {
+        const sut = new Day4();
+        
+        let valid = 0;
+
+        for(let i = 171309; i <= 643603; i++) {            
+            const result = sut.validPasswordPart2(i.toString());
+            if(result) {
+                valid++;
+            }
+        }
+
+        expect(valid).toBe(1111);
     });
 
 });

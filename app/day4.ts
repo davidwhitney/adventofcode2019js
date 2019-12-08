@@ -8,6 +8,16 @@ export default class Day4 {
         ];
         
         return rules.every(r => r(chars));
+    }
+
+    public validPasswordPart2(chars: string): boolean {
+        const rules = [
+            (c: string) => this.mustBeSixCharactersLong(c),
+            (c: string) => this.mustContainAtLeastOneDoubleMatchingDigit(c),
+            (c: string) => this.digitsMustNotDecreaseInValue(c),
+        ];
+        
+        return rules.every(r => r(chars));
     } 
     
     private mustBeSixCharactersLong(chars: string) {
@@ -39,4 +49,28 @@ export default class Day4 {
         }
         return true;
     }
+
+        
+    public mustContainAtLeastOneDoubleMatchingDigit(chars: string) {
+        const parts: string[] = [];
+        
+        for (const letter of chars) {
+            if (parts.length == 0) {
+                parts.push(letter);
+                continue;
+            }
+
+            const lastPart = parts[parts.length - 1];
+            const lastLetterOfLastPart = lastPart[lastPart.length - 1];
+
+            if (letter == lastLetterOfLastPart) {
+                parts[parts.length -1] += letter;
+            } else {
+                parts.push(letter);
+            }
+        }
+
+        return parts.some(item => item.length == 2);
+    }
+    
 }
