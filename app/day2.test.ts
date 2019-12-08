@@ -38,7 +38,7 @@ describe("Day 2", () => {
         
         sut.execute();
 
-        expect(sut.output).toEqual(3706713);
+        expect(sut.state[0]).toEqual(3706713);
     });
 
     it("Part 2", () => {
@@ -50,7 +50,7 @@ describe("Day 2", () => {
                 const sut = new Day2(...dataItems).resetStateUsing(noun, verb);        
                 sut.execute();
 
-                if (sut.output === 19690720) {
+                if (sut.state[0] === 19690720) {
                     console.log(100 * noun + verb);
                 }
             }

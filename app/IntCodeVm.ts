@@ -4,10 +4,8 @@ export class IntcodeVm {
     _instructionPointer: number = 0;
     _output: number[] = [];
     _state: number[] = [];
-    _audit: string[] = [];
 
     get state() { return this._state };
-    get output() { return this._state[0]; }
 
     constructor(...values: number[]) {
         this._state = [ ...values ];
@@ -37,7 +35,6 @@ export class IntcodeVm {
             }
 
             const operation = operations[opCode.code];
-            this._audit.push(operation.name);
             operation(this, opCode);
             opCode = this.evaluateCurrentOpcode();
         }
@@ -49,12 +46,9 @@ export class IntcodeVm {
             return OpCode.haltExecution();
         }
 
-        const valueStr = value.toString();
-        if (valueStr.length > 2) { 
-            return OpCode.fromPackedValue(valueStr);
-        }
-
-        return OpCode.allPositionMode(value);
+        return value.toString().length > 2
+            ? OpCode.fromPackedValue(value.toString())
+            : OpCode.allPositionMode(value);
     }
 
     public resetStateUsing(noun: number, verb: number): IntcodeVm {        
@@ -74,9 +68,6 @@ export class IntcodeVm {
     }
 }
 
-
-type ParameterMode = 0 | 1;
-
 class OpCode {
     public code: number;
     public accessMask: string;
@@ -90,13 +81,13 @@ class OpCode {
         return this.code == 0 || this.code == 99;
     }
 
-    public accessModeForParameter(paramOffset: number): ParameterMode {
+    public accessModeForParameter(paramOffset: number): number {
         const offset = this.accessMask.length - paramOffset;
         if (offset < 0) {
             return 0;
         }
 
-        return <ParameterMode> parseInt(this.accessMask[offset]);
+        return parseInt(this.accessMask[offset]);
     }
 
     public static fromPackedValue(value: string) {

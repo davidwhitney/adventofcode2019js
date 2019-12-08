@@ -1,30 +1,19 @@
 import { IntcodeVm as IntCodeVm } from "./IntCodeVm";
 import * as fs from 'fs';
 
-describe("Day 2", () => {
+describe("Day 5", () => {
     it("Can support add opcodes", () => {
-        const sut = new IntCodeVm(1, 1, 2, 4);        
+        const sut = new IntCodeVm(1, 1, 2, 4);
+        sut.stdin = () => 0;
         sut.execute(); 
         expect(sut.state[4]).toBe(3);
     });
-    
-    /*it("instructionPointer moves on correctly for addition", () => {
-        const sut = new IntCodeVm(1, 1, 2, 4);        
-        sut.execute(); 
-        expect(sut.instructionPointer).toBe(4);
-    });*/
 
     it("Can support multiply opcodes", () => {
         const sut = new IntCodeVm(2, 0, 0, 3);
         sut.execute();
         expect(sut.state[3]).toBe(4);
     });
-
-    /*it("instructionPointer moves on correctly for multiply", () => {
-        const sut = new IntCodeVm(2, 0, 0, 4);  
-        sut.execute(); 
-        expect(sut.instructionPointer).toBe(4);
-    });*/
 
     it("Can support halting opcodes", () => {
         const sut = new IntCodeVm(99, 3, 3, 4);        
