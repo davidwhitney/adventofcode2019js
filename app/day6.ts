@@ -31,6 +31,41 @@ export default class Day6 {
         }
         return total;
     }
+
+    public distanceBetween(start: string, end: string): number {
+        const startPath = this.getPathToRoot(this._celestials[start]);
+        const endPath = this.getPathToRoot(this._celestials[end]);
+
+        let distanceBetween = -4; // To hide the hops from "SAN" and "YOU" ad the dupe in the middle
+
+        let sharedRoot = '';
+        for(const location of startPath) {
+            distanceBetween++;
+            if(endPath.indexOf(location) != -1) {
+                sharedRoot = location;
+                break;
+            }
+        }
+
+        for(const location of endPath) {
+            distanceBetween++;
+            if(location.indexOf(sharedRoot) != -1) {
+                break;
+            }
+        }
+
+        return distanceBetween;
+    }
+
+    private getPathToRoot(startLoc: Celestial): string[] {
+        const path: string[] = [];
+        let current = startLoc;
+        while (current.Orbits != null) {
+            path.push(current.id);
+            current = current.Orbits;
+        }
+        return path;
+    }
 }
 
 class Celestial {

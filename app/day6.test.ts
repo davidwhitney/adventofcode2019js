@@ -59,5 +59,25 @@ describe("Day 6", () => {
         }
 
         expect(sut.countRelationships()).toBe(140608);
+        expect(sut.distanceBetween("YOU", "SAN")).toBe(337);
+    });
+
+    it("Example 2", () => {
+        const sut = new Day6();
+        sut.addRelationship("COM)B");
+        sut.addRelationship("B)C");
+        sut.addRelationship("C)D");
+        sut.addRelationship("D)E");
+        sut.addRelationship("E)F");
+        sut.addRelationship("B)G");
+        sut.addRelationship("G)H");
+        sut.addRelationship("D)I");
+        sut.addRelationship("E)J");
+        sut.addRelationship("J)K");
+        sut.addRelationship("K)L");
+        sut.addRelationship("K)YOU");
+        sut.addRelationship("I)SAN");
+
+        expect(sut.distanceBetween("YOU", "SAN")).toBe(4);
     });
 });
