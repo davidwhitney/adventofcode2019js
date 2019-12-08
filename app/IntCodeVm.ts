@@ -67,14 +67,14 @@ export class IntcodeVm {
     private static storeInput(ctx: IntcodeVm, opcode: OpCode) {
         const value = ctx.stdin();
         const target = ctx._state[ctx._instructionPointer + 1];
+
         ctx._state[target] = value;
 
         ctx._instructionPointer += 2;
     }
 
-    private static writeOutput(ctx: IntcodeVm, opcode: OpCode) {        
-        const pointer = ctx._state[ctx._instructionPointer + 1];
-        const value = ctx.state[pointer];
+    private static writeOutput(ctx: IntcodeVm, opcode: OpCode) {
+        const value = IntcodeVm.getValue(ctx, ctx._instructionPointer + 1, opcode, 1);
         ctx.stdout(value);
         ctx._instructionPointer += 2;
     }

@@ -29,6 +29,7 @@ describe("Day 5", () => {
         sut.stdin = () => 1;
         sut.execute();
 
+        console.log(sut._output);
         expect(sut._output[sut._output.length -1]).toBe(15097178);
     });
 });
