@@ -15,7 +15,7 @@ export class IntcodeVm {
 
     public execute(): void {
         const operations = {
-            0: Operations.noOp(),
+            0: Operations.noOp,
             1: Operations.add,
             2: Operations.multiply,
             3: Operations.storeInput,
@@ -57,7 +57,73 @@ export class IntcodeVm {
     }
 
     public static withInput = (path: string) => IntcodeVm.withInputString(fs.readFileSync(path, "utf8"));
-    public static withInputString = (testData: string) => new IntcodeVm(...testData.split(',').map(asString => parseInt(asString)));
+    public static withInputString = (data: string) => new IntcodeVm(...data.split(',').map(s => parseInt(s)));
+}
+
+class Operations {
+    public static noOp = () => {};
+
+    public static add(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        const target = ctx.state[ctx._instructionPointer + 3];
+        ctx.state[target] = p1 + p2;
+        return ctx._instructionPointer + 4;
+    }
+
+    public static multiply(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        const target = ctx.state[ctx._instructionPointer + 3];
+        ctx.state[target] = p1 * p2;
+        return ctx._instructionPointer + 4;
+    }
+
+    public static storeInput(ctx: IntcodeVm, opcode: OpCode): number {
+        const target = ctx.state[ctx._instructionPointer + 1];
+        ctx.state[target] = ctx.stdin();
+        return ctx._instructionPointer + 2;
+    }
+
+    public static writeOutput(ctx: IntcodeVm, opcode: OpCode): number {
+        const value = Operations.getValue(ctx, opcode, 1);
+        ctx.stdout(value);
+        return ctx._instructionPointer + 2;
+    }
+
+    public static jumpIfTrue(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        return ctx._instructionPointer = p1 != 0 ? p2 : ctx._instructionPointer + 3;
+    }
+
+    public static jumpIfFalse(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        return ctx._instructionPointer = p1 == 0 ? p2 : ctx._instructionPointer + 3;
+    }
+
+    public static lessThan(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        const target = ctx.state[ctx._instructionPointer + 3];
+        ctx.state[target] = p1 < p2 ? 1 : 0;
+        return ctx._instructionPointer + 4;
+    }
+
+    public static equals(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        const p2 = Operations.getValue(ctx, opcode, 2);
+        const target = ctx.state[ctx._instructionPointer + 3];
+        ctx.state[target] = p1 == p2 ? 1 : 0;
+        return ctx._instructionPointer + 4;
+    }
+
+    private static getValue(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
+        const identifier = ctx._instructionPointer + paramNumber;
+        const accessMode = opcode.accessModeForParameter(paramNumber);
+        return accessMode == 1 ? ctx.state[identifier] : ctx.state[ctx.state[identifier]];
+    }
 }
 
 class OpCode {
@@ -83,70 +149,4 @@ class OpCode {
     public isHalt = ()  => this.value == 0 || this.value == 99;
     public static allPositionMode = (opCode: number) => new OpCode(opCode, "000000000000000000");
     public static haltExecution = () => OpCode.allPositionMode(0);
-}
-
-class Operations {
-    public static noOp = () => {};
-
-    public static add(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx._state[ctx._instructionPointer + 3];
-        ctx._state[target] = p1 + p2;
-        return ctx._instructionPointer + 4;
-    }
-
-    public static multiply(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx._state[ctx._instructionPointer + 3];
-        ctx._state[target] = p1 * p2;
-        return ctx._instructionPointer + 4;
-    }
-
-    public static storeInput(ctx: IntcodeVm, opcode: OpCode): number {
-        const target = ctx._state[ctx._instructionPointer + 1];
-        ctx._state[target] = ctx.stdin();
-        return ctx._instructionPointer + 2;
-    }
-
-    public static writeOutput(ctx: IntcodeVm, opcode: OpCode): number {
-        const value = Operations.getValue(ctx, opcode, 1);
-        ctx.stdout(value);
-        return ctx._instructionPointer + 2;
-    }
-
-    public static jumpIfTrue(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        return ctx._instructionPointer = p1 != 0 ? p2 : ctx._instructionPointer + 3;
-    }
-
-    public static jumpIfFalse(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        return ctx._instructionPointer = p1 == 0 ? p2 : ctx._instructionPointer + 3;
-    }
-
-    public static lessThan(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx._state[ctx._instructionPointer + 3];
-        ctx._state[target] = p1 < p2 ? 1 : 0;
-        return ctx._instructionPointer + 4;
-    }
-
-    public static equals(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx._state[ctx._instructionPointer + 3];
-        ctx._state[target] = p1 == p2 ? 1 : 0;
-        return ctx._instructionPointer + 4;
-    }
-
-    private static getValue(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
-        const identifier = ctx._instructionPointer + paramNumber;
-        const accessMode = opcode.accessModeForParameter(paramNumber);
-        return accessMode == 1 ? ctx._state[identifier] : ctx._state[ctx._state[identifier]];
-    }
 }
