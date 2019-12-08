@@ -1,22 +1,21 @@
 import * as fs from 'fs';
 
 export class IntcodeVm {
+    get state() { return this._state };
+    public stdin(): number { throw new Error("Input not wired up"); }
+    public stdout(value: number) { this._output.push(value); }
+
     _instructionPointer: number = 0;
     _output: number[] = [];
     _state: number[] = [];
-
-    get state() { return this._state };
 
     constructor(...values: number[]) {
         this._state = [ ...values ];
     }
 
-    public stdin(): number { throw new Error("Input not wired up"); }
-    public stdout(value: number) { this._output.push(value); }
-
     public execute(): void {
         const operations = {
-            0: () => { /* No-Op */ },
+            0: Operations.noOp(),
             1: Operations.add,
             2: Operations.multiply,
             3: Operations.storeInput,
@@ -27,20 +26,20 @@ export class IntcodeVm {
             8: Operations.equals
         };
 
-        let opCode = this.evaluateCurrentOpcode();
+        let opCode = this.parseOpCodeFromInstructionPointer();
 
-        while (operations[opCode.code] != null) {
-            if (opCode.halt()) {
+        while (operations[opCode.value] != null) {
+            if (opCode.isHalt()) {
                 break;
             }
 
-            const operation = operations[opCode.code];
-            operation(this, opCode);
-            opCode = this.evaluateCurrentOpcode();
+            const operation = operations[opCode.value];
+            this._instructionPointer = operation(this, opCode);
+            opCode = this.parseOpCodeFromInstructionPointer();
         }
     }
 
-    private evaluateCurrentOpcode(): OpCode { 
+    private parseOpCodeFromInstructionPointer(): OpCode {
         const value = this._state[this._instructionPointer];
         if (value == null) {
             return OpCode.haltExecution();
@@ -57,37 +56,22 @@ export class IntcodeVm {
         return this;
     }
 
-    public static withInput(path: string) {
-        const testData: string = fs.readFileSync(path, "utf8");      
-        return this.withInputString(testData);
-    }
-
-    public static withInputString(testData: string) {
-        const dataItems = testData.split(',').map(asString => parseInt(asString));        
-        return new IntcodeVm(...dataItems);
-    }
+    public static withInput = (path: string) => IntcodeVm.withInputString(fs.readFileSync(path, "utf8"));
+    public static withInputString = (testData: string) => new IntcodeVm(...testData.split(',').map(asString => parseInt(asString)));
 }
 
 class OpCode {
-    public code: number;
+    public value: number;
     public accessMask: string;
 
     constructor(opCode: number, accessMask: string) {
-        this.code = opCode;
+        this.value = opCode;
         this.accessMask = accessMask;
-    }
-
-    public halt() {
-        return this.code == 0 || this.code == 99;
     }
 
     public accessModeForParameter(paramOffset: number): number {
         const offset = this.accessMask.length - paramOffset;
-        if (offset < 0) {
-            return 0;
-        }
-
-        return parseInt(this.accessMask[offset]);
+        return offset < 0 ? 0 : parseInt(this.accessMask[offset]);
     }
 
     public static fromPackedValue(value: string) {
@@ -96,86 +80,73 @@ class OpCode {
         return new OpCode(opCode, accessMask);
     }
 
-    public static allPositionMode(opCode: number) {
-        return new OpCode(opCode, "000000000000000000");
-    }
-
-    public static haltExecution() {
-        return this.allPositionMode(0);
-    }
+    public isHalt = ()  => this.value == 0 || this.value == 99;
+    public static allPositionMode = (opCode: number) => new OpCode(opCode, "000000000000000000");
+    public static haltExecution = () => OpCode.allPositionMode(0);
 }
 
 class Operations {
+    public static noOp = () => {};
 
-    public static add(ctx: IntcodeVm, opcode: OpCode) {
+    public static add(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = ctx._state[ctx._instructionPointer + 3];
-
         ctx._state[target] = p1 + p2;
-        ctx._instructionPointer += 4;
+        return ctx._instructionPointer + 4;
     }
 
-    public static multiply(ctx: IntcodeVm, opcode: OpCode) {
+    public static multiply(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = ctx._state[ctx._instructionPointer + 3];
-
         ctx._state[target] = p1 * p2;
-        ctx._instructionPointer += 4;
+        return ctx._instructionPointer + 4;
     }
 
-    public static storeInput(ctx: IntcodeVm, opcode: OpCode) {
-        const value = ctx.stdin();
+    public static storeInput(ctx: IntcodeVm, opcode: OpCode): number {
         const target = ctx._state[ctx._instructionPointer + 1];
-
-        ctx._state[target] = value;
-        ctx._instructionPointer += 2;
+        ctx._state[target] = ctx.stdin();
+        return ctx._instructionPointer + 2;
     }
 
-    public static writeOutput(ctx: IntcodeVm, opcode: OpCode) {
+    public static writeOutput(ctx: IntcodeVm, opcode: OpCode): number {
         const value = Operations.getValue(ctx, opcode, 1);
         ctx.stdout(value);
-        ctx._instructionPointer += 2;
+        return ctx._instructionPointer + 2;
     }
 
-    public static jumpIfTrue(ctx: IntcodeVm, opcode: OpCode) {
+    public static jumpIfTrue(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        ctx._instructionPointer = p1 != 0 ? p2 : ctx._instructionPointer + 3;
+        return ctx._instructionPointer = p1 != 0 ? p2 : ctx._instructionPointer + 3;
     }
 
-    public static jumpIfFalse(ctx: IntcodeVm, opcode: OpCode) {
+    public static jumpIfFalse(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        ctx._instructionPointer = p1 == 0 ? p2 : ctx._instructionPointer + 3;
+        return ctx._instructionPointer = p1 == 0 ? p2 : ctx._instructionPointer + 3;
     }
 
-    public static lessThan(ctx: IntcodeVm, opcode: OpCode) {
+    public static lessThan(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = ctx._state[ctx._instructionPointer + 3];
         ctx._state[target] = p1 < p2 ? 1 : 0;
-        ctx._instructionPointer += 4;
+        return ctx._instructionPointer + 4;
     }
 
-    public static equals(ctx: IntcodeVm, opcode: OpCode) {
+    public static equals(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = ctx._state[ctx._instructionPointer + 3];
         ctx._state[target] = p1 == p2 ? 1 : 0;
-        ctx._instructionPointer += 4;
+        return ctx._instructionPointer + 4;
     }
 
     private static getValue(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
         const identifier = ctx._instructionPointer + paramNumber;
         const accessMode = opcode.accessModeForParameter(paramNumber);
-
-        if (accessMode == 1) {
-            return ctx._state[identifier];
-        }
-
-        const pointer = ctx._state[identifier];
-        return ctx._state[pointer];
+        return accessMode == 1 ? ctx._state[identifier] : ctx._state[ctx._state[identifier]];
     }
 }
