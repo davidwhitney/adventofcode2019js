@@ -8,7 +8,7 @@ export default class Day8 {
     constructor(dataAtString: string, x: number, y: number) {
         this.x = x;
         this.y = y;
-        this.layers = this.loadData(dataAtString, x, y);
+        this.layers = Day8.loadData(dataAtString, x, y);
     }
 
     public toImage(filename: string) {
@@ -21,7 +21,7 @@ export default class Day8 {
                 buffer = "";
             }
 
-            let value = this.firstNonTransparentPixelFor(this.layers, x) ?? "2";
+            let value = Day8.firstNonTransparentPixelFor(this.layers, x) ?? "2";
             buffer += value;
         }
 
@@ -29,9 +29,9 @@ export default class Day8 {
             lines.push(buffer);
         }
 
-        let image = new Jimp(25, 6, '#a39a99');
-        for(let x = 0; x < 25; x++) {
-            for(let y = 0; y < 6; y++) {
+        let image = new Jimp(this.x, this.y, '#a39a99');
+        for (let x = 0; x < this.x; x++) {
+            for (let y = 0; y < this.y; y++) {
                 const value = lines[y][x];
                 let colour = '#ffffff00'; // red
                 if (value == '0') {
@@ -49,7 +49,7 @@ export default class Day8 {
         image.write(filename);
     }
 
-    private firstNonTransparentPixelFor(layers: string[], charIndex: number) {
+    private static firstNonTransparentPixelFor(layers: string[], charIndex: number) {
         for (const layer of layers) {
             if (layer[charIndex] != '2') {
                 return layer[charIndex];
@@ -58,21 +58,21 @@ export default class Day8 {
         return null;
     }
 
-    private loadData(testData, maxX, maxY) {
-        let x = 0;
+    private static loadData(testData, maxX, maxY) {
         const layers: string[] = [];
         let buffer = "";
         for (const char of testData) {
-            if (x == (maxX * maxY)) {
-                x = 0;
+            if (buffer.length == (maxX * maxY)) {
                 layers.push(buffer);
                 buffer = "";
             }
 
             buffer += char;
-            x++
         }
-        layers.push(buffer);
+
+        if (buffer.length > 0) {
+            layers.push(buffer);
+        }
         return layers;
     }
 }

@@ -25,12 +25,12 @@ describe("Day 8", () => {
 
     it("Example 2", () => {
         const sut = new Day8("0222112222120000", 2, 2);
-        sut.toImage("example2.jpg");
+        sut.toImage("./test-output/example2.jpg");
     });
 
     it("Puzzle 2", () => {
         const testData: string = fs.readFileSync("./app/day8-input1.txt", "utf8");
         const layers = new Day8(testData, 25, 6);
-        layers.toImage("puz2.jpg");
+        layers.toImage("./test-output/puz2.jpg");
     });
 });
