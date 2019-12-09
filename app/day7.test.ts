@@ -4,24 +4,27 @@ describe("Amp", () => {
 
     it("Example 1", () => {
         const output = chainAmpsWithProgram(
-            [ 4, 3, 2, 1, 0 ],
-            [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]);
+            [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0],
+            [ 4, 3, 2, 1, 0 ]
+        );
 
         expect(output).toBe(43210);
     });
 
     it("Example 2", () => {
         const output = chainAmpsWithProgram(
-            [ 0, 1, 2, 3, 4 ],
-            [3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0]);
+            [3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0],
+            [ 0, 1, 2, 3, 4 ]
+        );
 
         expect(output).toBe(54321);
     });
 
     it("Example 3", () => {
         const output = chainAmpsWithProgram(
-            [ 1, 0, 4, 3, 2 ],
-            [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33, 1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0]);
+            [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33, 1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0],
+            [ 1, 0, 4, 3, 2 ]
+        );
 
         expect(output).toBe(65210);
     });
@@ -31,9 +34,12 @@ describe("Amp", () => {
 
         const permutations = permute([ 0, 1, 2, 3, 4 ]);
         for (const permutation of permutations) {
-            const output = chainAmps(
-                permutation,
-                "./app/day7-input1.txt");
+
+            const amps = Array(5)
+                .fill({})
+                .map(() => IntcodeVm.withInput("./app/day7-input1.txt"));
+
+            const output = runEachAmpOnce(amps, permutation);
 
             if (output > highest) {
                 highest = output;
@@ -42,34 +48,27 @@ describe("Amp", () => {
 
         expect(highest).toBe(17440);
     });
+
+
+    it("Example 4 - feedback", () => {
+        const output = chainAmpsWithProgram(
+            [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5],
+            [ 9,8,7,6,5 ]
+        );
+
+        expect(output).toBe(139629729);
+    });
 });
 
-function chainAmps(phaseSettings: number[], inputProgramPath: string): number {
-    const amplifiers = [
-        IntcodeVm.withInput(inputProgramPath),
-        IntcodeVm.withInput(inputProgramPath),
-        IntcodeVm.withInput(inputProgramPath),
-        IntcodeVm.withInput(inputProgramPath),
-        IntcodeVm.withInput(inputProgramPath),
-    ];
+function chainAmpsWithProgram(program: number[], phaseSettings: number[]): number {
+    const amps = Array(5)
+        .fill({})
+        .map(() => new IntcodeVm(...program));
 
-    return chainExplicitAmps(phaseSettings, amplifiers);
+    return runEachAmpOnce(amps, phaseSettings);
 }
 
-function chainAmpsWithProgram(phaseSettings: number[], program: number[]): number {
-    const amplifiers = [
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-    ];
-
-    return chainExplicitAmps(phaseSettings, amplifiers);
-}
-
-function chainExplicitAmps(phaseSettings: number[], amplifiers: IntcodeVm[]): number {
-
+function runEachAmpOnce(amplifiers: IntcodeVm[], phaseSettings: number[]): number {
     const inputQueue = [ 0 ];
     for (const amp of amplifiers) {
 
