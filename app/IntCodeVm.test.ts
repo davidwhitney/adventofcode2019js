@@ -26,14 +26,14 @@ describe("Day 5", () => {
         sut.stdin = () => 666;       
         sut.execute();
 
-        expect(sut._state[50]).toBe(666);
+        expect(sut.state[50]).toBe(666);
     });
 
     it("Can support output opcode", () => {
         let output = -1;
 
         const sut = new IntCodeVm(4, 50);
-        sut._state[50] = 555; 
+        sut.state[50] = 555;
         sut.stdout = (value: number) => { output = value; };  
         sut.execute();
         
