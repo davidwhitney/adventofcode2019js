@@ -32,4 +32,13 @@ describe("Day 9", () => {
 
         expect(sut.output[0]).toBe(3507134798);
     });
+
+    it('Does puzzle 2', () => {
+        const sut = IntCodeVm.withInput("./app/day9-input1.txt");
+        sut.stdin = () => 2;
+
+        sut.execute();
+
+        expect(sut.output[0]).toBe(84513);
+    });
 });
