@@ -3,11 +3,12 @@ import * as fs from 'fs';
 export class IntcodeVm {
     get state() { return this._state };
     get instructionPointer() { return this._instructionPointer; }
+    get valueUnderInstructionPointer() { return this._state[this._instructionPointer]; }
 
     public pauseOnOutput: boolean = false;
     public relativeBase: number = 0;
-
     public output: number[] = [];
+
     private _instructionPointer: number = 0;
     private readonly _state: number[] = [];
 
@@ -29,7 +30,7 @@ export class IntcodeVm {
             9: Operations.adjustRelativeBase
         };
 
-        let opCode = this.parseOpCodeFromInstructionPointer();
+        let opCode = OpCode.fromValue(this.valueUnderInstructionPointer);
 
         while (operations[opCode.value] != null) {
             if (opCode.isHalt()) {
@@ -43,33 +44,17 @@ export class IntcodeVm {
                 return false;
             }
 
-            opCode = this.parseOpCodeFromInstructionPointer();
+            opCode = OpCode.fromValue(this.valueUnderInstructionPointer);
         }
 
         return true;
     }
 
     public inputBuffer: number[] = [];
-    public stdin(): number {
-        return <number>this.inputBuffer.shift();
-    }
+    public stdin = (): number => <number> this.inputBuffer.shift();
+    public stdout = (value: number): void => { this.output.push(value); }
 
-    public stdout(value: number) {
-        this.output.push(value);
-    }
-
-    private parseOpCodeFromInstructionPointer(): OpCode {
-        const value = this._state[this._instructionPointer];
-        if (value == null) {
-            return OpCode.haltExecution();
-        }
-
-        return value.toString().length > 2
-            ? OpCode.fromPackedValue(value.toString())
-            : OpCode.allPositionMode(value);
-    }
-
-    public resetStateUsing(noun: number, verb: number): IntcodeVm {        
+    public resetStateUsing(noun: number, verb: number): IntcodeVm {
         this._state[1] = noun;
         this._state[2] = verb;
         return this;
@@ -88,7 +73,8 @@ class Operations {
     public static add(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        let target = Operations.getTarget(ctx, opcode, 3);
+        const target = Operations.getTarget(ctx, opcode, 3);
+
         ctx.state[target] = p1 + p2;
         return ctx.instructionPointer + 4;
     }
@@ -97,19 +83,20 @@ class Operations {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = Operations.getTarget(ctx, opcode, 3);
+
         ctx.state[target] = p1 * p2;
         return ctx.instructionPointer + 4;
     }
 
     public static storeInput(ctx: IntcodeVm, opcode: OpCode): number {
         const target = Operations.getTarget(ctx, opcode, 1);
+
         ctx.state[target] = ctx.stdin();
         return ctx.instructionPointer + 2;
     }
 
     public static writeOutput(ctx: IntcodeVm, opcode: OpCode): number {
-        const value = Operations.getValue(ctx, opcode, 1);
-        ctx.stdout(value);
+        ctx.stdout(Operations.getValue(ctx, opcode, 1));
         return ctx.instructionPointer + 2;
     }
 
@@ -129,6 +116,7 @@ class Operations {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = Operations.getTarget(ctx, opcode, 3);
+
         ctx.state[target] = p1 < p2 ? 1 : 0;
         return ctx.instructionPointer + 4;
     }
@@ -137,13 +125,13 @@ class Operations {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
         const target = Operations.getTarget(ctx, opcode, 3);
+        
         ctx.state[target] = p1 == p2 ? 1 : 0;
         return ctx.instructionPointer + 4;
     }
 
     public static adjustRelativeBase(ctx: IntcodeVm, opcode: OpCode): number {
-        const p1 = Operations.getValue(ctx, opcode, 1);
-        ctx.relativeBase += p1;
+        ctx.relativeBase += Operations.getValue(ctx, opcode, 1);;
         return ctx.instructionPointer + 2;
     }
 
@@ -154,19 +142,11 @@ class Operations {
 
     private static getValue(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
         const identifier = ctx.instructionPointer + paramNumber;
-        const accessMode = opcode.accessModeForParameter(paramNumber);
 
-        if (accessMode === 0) {
-            return ctx.state[ctx.state[identifier]];
-        }
-
-        if (accessMode === 1) {
-            return ctx.state[identifier];
-        }
-
-        if (accessMode === 2) {
-            const adjusted = ctx.state[identifier] + ctx.relativeBase;
-            return ctx.state[adjusted];
+        switch (opcode.accessModeForParameter(paramNumber)) {
+            case 0: return ctx.state[ctx.state[identifier]];
+            case 1: return ctx.state[identifier];
+            case 2: return ctx.state[(ctx.state[identifier] + ctx.relativeBase)];
         }
 
         throw new Error("Unsupported access mode.");
@@ -191,6 +171,16 @@ class OpCode {
         const opCode = parseInt(value.slice(value.length - 2));
         const accessMask = value.slice(0, value.length - 2);
         return new OpCode(opCode, accessMask);
+    }
+
+    public static fromValue(value: number | null): OpCode {
+        if (value == null) {
+            return OpCode.haltExecution();
+        }
+
+        return value.toString().length > 2
+            ? OpCode.fromPackedValue(value.toString())
+            : OpCode.allPositionMode(value);
     }
 
     public isHalt = ()  => this.value == 0 || this.value == 99;
