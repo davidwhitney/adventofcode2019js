@@ -35,10 +35,7 @@ describe("Amp", () => {
         const permutations = permute([ 0, 1, 2, 3, 4 ]);
         for (const permutation of permutations) {
 
-            const amps = Array(5)
-                .fill({})
-                .map(() => IntcodeVm.withInput("./app/day7-input1.txt"));
-
+            const amps =  IntcodeVm.create(5, () => IntcodeVm.withInput("./app/day7-input1.txt"));
             const output = runEachAmpOnce(amps, permutation);
 
             if (output > highest) {
@@ -74,10 +71,7 @@ describe("Amp", () => {
         const permutations = permute([ 5, 6, 7, 8, 9 ]);
         for (const permutation of permutations) {
 
-            const amps = Array(5)
-                .fill({})
-                .map(() => IntcodeVm.withInput("./app/day7-input1.txt"));
-
+            const amps =  IntcodeVm.create(5, () => IntcodeVm.withInput("./app/day7-input1.txt"));
             const output = feedbackLoopAmps(amps, permutation);
 
             if (output > highest) {
@@ -90,10 +84,7 @@ describe("Amp", () => {
 });
 
 function chainAmpsWithProgram(program: number[], phaseSettings: number[]): number {
-    const amps = Array(5)
-        .fill({})
-        .map(() => new IntcodeVm(...program));
-
+    const amps =  IntcodeVm.create(5, () => new IntcodeVm(...program));
     return runEachAmpOnce(amps, phaseSettings);
 }
 
@@ -116,13 +107,8 @@ function runEachAmpOnce(amplifiers: IntcodeVm[], phaseSettings: number[]): numbe
 
 
 function feedbackLoop(program: number[], phaseSettings: number[]): number {
-    return feedbackLoopAmps([
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program),
-        new IntcodeVm(...program)
-    ], phaseSettings);
+    const amps =  IntcodeVm.create(5, () => new IntcodeVm(...program));
+    return feedbackLoopAmps(amps, phaseSettings);
 }
 
 function feedbackLoopAmps(amplifiers: IntcodeVm[], phaseSettings: number[]): number {

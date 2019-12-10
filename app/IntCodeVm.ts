@@ -75,6 +75,9 @@ export class IntcodeVm {
 
     public static withInput = (path: string) => IntcodeVm.withInputString(fs.readFileSync(path, "utf8"));
     public static withInputString = (data: string) => new IntcodeVm(...data.split(',').map(s => parseInt(s)));
+    public static create(quantity: number, factoryFunc: CallableFunction) {
+        return Array(quantity).fill({}).map(() => factoryFunc());
+    }
 }
 
 class Operations {
