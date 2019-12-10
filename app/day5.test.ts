@@ -7,21 +7,21 @@ describe("Day 5", () => {
         sut.stdin = () => 666;
         sut.execute();
 
-        expect(sut._output[0]).toBe(666);
+        expect(sut.output[0]).toBe(666);
     });
 
     it("Example 1", () => {
         const sut = new IntcodeVm(1002, 4, 3, 4, 33);
         sut.execute();
 
-        expect(sut._state[4]).toBe(99);
+        expect(sut.state[4]).toBe(99);
     });
 
     it("Example 2", () => {
         const sut = new IntcodeVm(1101, 100, -1, 4, 0);
         sut.execute();
 
-        expect(sut._state[4]).toBe(99);
+        expect(sut.state[4]).toBe(99);
     });
 
     it("Puzzle 1", () => {
@@ -29,8 +29,8 @@ describe("Day 5", () => {
         sut.stdin = () => 1;
         sut.execute();
 
-        console.log(sut._output);
-        expect(sut._output[sut._output.length -1]).toBe(15097178);
+        console.log(sut.output);
+        expect(sut.output[sut.output.length -1]).toBe(15097178);
     });
 
     it("Example 3 - new opcodes (position mode)", () => {
@@ -38,7 +38,7 @@ describe("Day 5", () => {
         sut.stdin = () => 0;
         sut.execute();
 
-        expect(sut._output[sut._output.length -1]).toBe(0);
+        expect(sut.output[sut.output.length -1]).toBe(0);
     });
 
     it("Example 4 - new opcodes (immediate mode)", () => {
@@ -46,7 +46,7 @@ describe("Day 5", () => {
         sut.stdin = () => 0;
         sut.execute();
 
-        expect(sut._output[sut._output.length -1]).toBe(0);
+        expect(sut.output[sut.output.length -1]).toBe(0);
     });
 
     it("Example 5 - new opcodes - outputs 999 if input below 8", () => {
@@ -57,7 +57,7 @@ describe("Day 5", () => {
         sut.stdin = () => 0;
         sut.execute();
 
-        expect(sut._output[sut._output.length -1]).toBe(999);
+        expect(sut.output[sut.output.length -1]).toBe(999);
     });
 
     it("Example 5 - new opcodes - outputs 1000 if input equals 8", () => {
@@ -68,7 +68,7 @@ describe("Day 5", () => {
         sut.stdin = () => 8;
         sut.execute();
 
-        expect(sut._output[sut._output.length -1]).toBe(1000);
+        expect(sut.output[sut.output.length -1]).toBe(1000);
     });
 
     it("Example 5 - new opcodes - outputs 1001 if input greater than 8", () => {
@@ -79,7 +79,7 @@ describe("Day 5", () => {
         sut.stdin = () => 9;
         sut.execute();
 
-        expect(sut._output[sut._output.length -1]).toBe(1001);
+        expect(sut.output[sut.output.length -1]).toBe(1001);
     });
 
     it("Puzzle 2", () => {
@@ -87,7 +87,7 @@ describe("Day 5", () => {
         sut.stdin = () => 5;
         sut.execute();
 
-        console.log(sut._output);
-        expect(sut._output[sut._output.length -1]).toBe(1558663);
+        console.log(sut.output);
+        expect(sut.output[sut.output.length -1]).toBe(1558663);
     });
 });

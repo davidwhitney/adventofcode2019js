@@ -5,9 +5,10 @@ export class IntcodeVm {
     get instructionPointer() { return this._instructionPointer; }
 
     public pauseOnOutput: boolean = false;
+    public relativeBase: number = 0;
 
+    public output: number[] = [];
     private _instructionPointer: number = 0;
-    private _output: number[] = [];
     private readonly _state: number[] = [];
 
     constructor(...values: number[]) {
@@ -24,7 +25,8 @@ export class IntcodeVm {
             5: Operations.jumpIfTrue,
             6: Operations.jumpIfFalse,
             7: Operations.lessThan,
-            8: Operations.equals
+            8: Operations.equals,
+            9: Operations.adjustRelativeBase
         };
 
         let opCode = this.parseOpCodeFromInstructionPointer();
@@ -53,7 +55,7 @@ export class IntcodeVm {
     }
 
     public stdout(value: number) {
-        this._output.push(value);
+        this.output.push(value);
     }
 
     private parseOpCodeFromInstructionPointer(): OpCode {
@@ -86,7 +88,7 @@ class Operations {
     public static add(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx.state[ctx.instructionPointer + 3];
+        let target = Operations.getTarget(ctx, opcode, 3);
         ctx.state[target] = p1 + p2;
         return ctx.instructionPointer + 4;
     }
@@ -94,13 +96,13 @@ class Operations {
     public static multiply(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx.state[ctx.instructionPointer + 3];
+        const target = Operations.getTarget(ctx, opcode, 3);
         ctx.state[target] = p1 * p2;
         return ctx.instructionPointer + 4;
     }
 
     public static storeInput(ctx: IntcodeVm, opcode: OpCode): number {
-        const target = ctx.state[ctx.instructionPointer + 1];
+        const target = Operations.getTarget(ctx, opcode, 1);
         ctx.state[target] = ctx.stdin();
         return ctx.instructionPointer + 2;
     }
@@ -126,7 +128,7 @@ class Operations {
     public static lessThan(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx.state[ctx.instructionPointer + 3];
+        const target = Operations.getTarget(ctx, opcode, 3);
         ctx.state[target] = p1 < p2 ? 1 : 0;
         return ctx.instructionPointer + 4;
     }
@@ -134,15 +136,40 @@ class Operations {
     public static equals(ctx: IntcodeVm, opcode: OpCode): number {
         const p1 = Operations.getValue(ctx, opcode, 1);
         const p2 = Operations.getValue(ctx, opcode, 2);
-        const target = ctx.state[ctx.instructionPointer + 3];
+        const target = Operations.getTarget(ctx, opcode, 3);
         ctx.state[target] = p1 == p2 ? 1 : 0;
         return ctx.instructionPointer + 4;
+    }
+
+    public static adjustRelativeBase(ctx: IntcodeVm, opcode: OpCode): number {
+        const p1 = Operations.getValue(ctx, opcode, 1);
+        ctx.relativeBase += p1;
+        return ctx.instructionPointer + 2;
+    }
+
+    private static getTarget(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
+        let target = ctx.state[ctx.instructionPointer + paramNumber];
+        return opcode.accessModeForParameter(paramNumber) == 2 ? target + ctx.relativeBase : target;
     }
 
     private static getValue(ctx: IntcodeVm, opcode: OpCode, paramNumber: number): number {
         const identifier = ctx.instructionPointer + paramNumber;
         const accessMode = opcode.accessModeForParameter(paramNumber);
-        return accessMode == 1 ? ctx.state[identifier] : ctx.state[ctx.state[identifier]];
+
+        if (accessMode === 0) {
+            return ctx.state[ctx.state[identifier]];
+        }
+
+        if (accessMode === 1) {
+            return ctx.state[identifier];
+        }
+
+        if (accessMode === 2) {
+            const adjusted = ctx.state[identifier] + ctx.relativeBase;
+            return ctx.state[adjusted];
+        }
+
+        throw new Error("Unsupported access mode.");
     }
 }
 

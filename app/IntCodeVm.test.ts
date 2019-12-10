@@ -39,4 +39,13 @@ describe("Day 5", () => {
         
         expect(output).toBe(555);
     });
+
+    it("Supports relative bases", () => {
+        const sut = new IntCodeVm(109,19);
+        sut.relativeBase = 2000;
+
+        sut.execute();
+
+        expect(sut.relativeBase).toBe(2019);
+    });
 });
