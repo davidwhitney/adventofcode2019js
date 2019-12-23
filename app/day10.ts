@@ -1,21 +1,11 @@
 export class Coord {
     public x: number;
     public y: number;
-    public obscured: boolean = false;
 
     constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
     }
-
-    public sameX = (other: Coord) => other.x == this.x;
-    public sameY = (other: Coord) => other.y == this.y;
-    public same = (other: Coord) => this.sameX(other) && this.sameY(other);
-    public notSame = (other: Coord) => !this.same(other);
-    public isAfter = (...others: Coord[]) => others.every(o => o.x < this.x);
-    public isBefore = (...others: Coord[]) => others.every(o => o.x > this.x);
-    public isAbove = (...others: Coord[]) => others.every(o => o.y > this.y);
-    public isBelow = (...others: Coord[]) => others.every(o => o.y < this.y);
 }
 
 interface LocationResult { x: number; y: number; canSee: number; }
@@ -34,10 +24,8 @@ export default class StarfieldScanner {
         const outputList: Coord[] = [];
 
         for (const asteroid of asteroidsNearestFirst) {
-            const degrees = StarfieldScanner.degreesBetweenPoints(coord, asteroid);
-
-            if(!visibleAsteroids.hasOwnProperty(degrees)) {
-                visibleAsteroids[degrees] = asteroid;
+            if(!visibleAsteroids.hasOwnProperty(asteroid["degreesFromOrigin"])) {
+                visibleAsteroids[asteroid["degreesFromOrigin"]] = asteroid;
                 outputList.push(asteroid);
             }
         }
@@ -47,19 +35,35 @@ export default class StarfieldScanner {
 
     private static degreesBetweenPoints(startingPoint: Coord, endingPoint: Coord): number {
         const originPoint = { x: endingPoint.x - startingPoint.x, y: endingPoint.y - startingPoint.y };
-        const bearingRadians = Math.atan2(originPoint.y, originPoint.x); // get bearing in radians
-        let bearingDegrees = bearingRadians * (180.0 / Math.PI); // convert to degrees
-        bearingDegrees = (bearingDegrees > 0.0 ? bearingDegrees : (360.0 + bearingDegrees)); // correct discontinuity
+        const bearingRadians = Math.atan2(originPoint.y, originPoint.x);
+        let bearingDegrees = bearingRadians * (180.0 / Math.PI);
+        bearingDegrees = (bearingDegrees > 0.0 ? bearingDegrees : (360.0 + bearingDegrees));
         return bearingDegrees;
     }
 
     public findBest(): LocationResult {
-        let bestLocation = { x: -1, y: -1, canSee: -1 };
+        const asteroids = this.discoverAsteroidsInField();
 
-        return bestLocation;
+        let bestLocation;
+        let bestLocationCanSee = 0;
+
+        for (const asteroid of asteroids) {
+            const numberCanSee = this.canSee(asteroid);
+            if(numberCanSee > bestLocationCanSee) {
+                bestLocation = asteroid;
+                bestLocationCanSee = numberCanSee;
+            }
+        }
+
+        return {
+            x: bestLocation.x,
+            y: bestLocation.y,
+            canSee: bestLocationCanSee
+        };
     }
 
-    private discoverAsteroidsInField(coord: Coord) {
+    private discoverAsteroidsInField(coord?: Coord) {
+        coord = coord ?? new Coord(-1, -1);
         let dist = 1;
         let visitedLocations = 0;
 
@@ -75,6 +79,7 @@ export default class StarfieldScanner {
             for (const location of neighbourLocations) {
                 const value = this._asteroidBelt[location.y][location.x];
                 if (value != ".") {
+                    location["degreesFromOrigin"] = StarfieldScanner.degreesBetweenPoints(coord, location);
                     discoveredAsteroids.push(location);
                 }
             }
@@ -100,7 +105,6 @@ export default class StarfieldScanner {
         return candidates.list.filter(this.isValidCoord);
     }
 
-    private isValidXY = (x: number, y: number) => this.isValidCoord(new Coord(x, y));
     private isValidCoord = (loc: Coord) => loc.x >= 0 && loc.x < this._asteroidBelt[0].length && loc.y >= 0 && loc.y < this._asteroidBelt.length;
 }
 
