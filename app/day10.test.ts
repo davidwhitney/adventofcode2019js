@@ -1,4 +1,4 @@
-import { default as StarfieldScanner } from "./day10";
+import {Coord, default as StarfieldScanner} from "./day10";
 
 describe("Day 10", () => {
     it("Can correctly get neighbouring locations for immediate neighbours", () =>{
@@ -8,7 +8,7 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const neighbours = sut.getNeighboursUsingOffset({ x: 0, y: 0 }, 1);
+        const neighbours = sut.getNeighboursUsingOffset(new Coord(0, 0), 1);
         expect(neighbours.length).toBe(3);
     });
 
@@ -19,7 +19,7 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const neighbours = sut.getNeighboursUsingOffset({ x: 0, y: 0 }, 2);
+        const neighbours = sut.getNeighboursUsingOffset(new Coord(0, 0), 2);
         expect(neighbours.length).toBe(5);
     });
 
@@ -31,7 +31,7 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 0 });
+        const result = sut.canSee(new Coord(0, 0));
         expect(result).toBe(1);
     });
 
@@ -42,7 +42,7 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const result = sut.canSee({ x: 2, y: 0 });
+        const result = sut.canSee(new Coord(2, 0));
         expect(result).toBe(1);
     });
 
@@ -53,7 +53,7 @@ describe("Day 10", () => {
             "#..",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 0 });
+        const result = sut.canSee(new Coord(0, 0));
         expect(result).toBe(1);
     });
 
@@ -64,7 +64,7 @@ describe("Day 10", () => {
             "#..",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 2 });
+        const result = sut.canSee(new Coord(0, 2));
         expect(result).toBe(1);
     });
 
@@ -75,7 +75,7 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 0 });
+        const result = sut.canSee(new Coord(0, 0));
         expect(result).toBe(1);
     });
 
@@ -87,7 +87,7 @@ describe("Day 10", () => {
             "....",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 0 });
+        const result = sut.canSee(new Coord(0, 0));
         expect(result).toBe(1);
     });
 
@@ -99,11 +99,43 @@ describe("Day 10", () => {
             "...",
         ]);
 
-        const result = sut.canSee({ x: 0, y: 0 });
+        const result = sut.canSee(new Coord(0, 0));
         expect(result).toBe(1);
     });
 
-    /*
+    it("Can have vision obscured to the left", () => {
+        const sut = new StarfieldScanner([
+            "###",
+            "...",
+            "...",
+        ]);
+
+        const result = sut.canSee(new Coord(2, 0));
+        expect(result).toBe(1);
+    });
+
+    it("Can have vision obscured upwards", () => {
+        const sut = new StarfieldScanner([
+            "#..",
+            "#..",
+            "#..",
+        ]);
+
+        const result = sut.canSee(new Coord(0, 0));
+        expect(result).toBe(1);
+    });
+
+    it("Can have vision obscured downwards", () => {
+        const sut = new StarfieldScanner([
+            "#..",
+            "#..",
+            "#..",
+        ]);
+
+        const result = sut.canSee(new Coord(0, 2));
+        expect(result).toBe(1);
+    });
+
     it("Example 1", () => {
 
         const sut = new StarfieldScanner([
@@ -119,5 +151,5 @@ describe("Day 10", () => {
         expect(bestLocation.x).toBe(3);
         expect(bestLocation.y).toBe(4);
         expect(bestLocation.canSee).toBe(8);
-    });*/
+    });
 });
